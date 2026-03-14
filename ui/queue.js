@@ -83,7 +83,7 @@ async function refreshQueue() {
           ${offer.reasoning ? `<div class="queue-reasoning">${offer.reasoning.substring(0, 220)}${offer.reasoning.length > 220 ? '...' : ''}</div>` : ''}
           <div class="btn-row">
             <a href="detail.html?id=${offer.operator_id}&offer=${offer.offer_id}" class="btn-approve">
-              View Data &rarr;
+              Review &rarr;
             </a>
             <button class="btn-reject" onclick="rejectOffer('${offer.offer_id}')">
               Reject

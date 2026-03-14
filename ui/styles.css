@@ -1137,7 +1137,9 @@ body::after {
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  flex: 1;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
   transition: all var(--md-motion-duration) var(--md-motion-standard);
   position: relative;
   overflow: hidden;
@@ -1171,6 +1173,8 @@ body::after {
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
   transition: all var(--md-motion-duration) var(--md-motion-standard);
 }
 
