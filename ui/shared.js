@@ -90,7 +90,7 @@ async function checkConnection() {
   const el = document.getElementById('server-status');
   if (!el) return false;
   try {
-    const r = await fetch(`${API}/`);
+    const r = await fetch(`${API}/api/status`);
     if (r.ok) {
       el.classList.remove('offline');
       el.classList.add('connected');

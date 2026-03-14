@@ -43,7 +43,7 @@ activity_log  = []   # chronological log of all agent runs
 
 # --- Endpoints ---
 
-@app.get("/")
+@app.get("/api/status")
 def root():
     return {"status": "Fleet Treasury OS running",
             "operators": list(setu_feeds.keys())}
