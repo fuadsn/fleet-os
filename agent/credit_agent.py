@@ -60,15 +60,7 @@ def execute_tier(offer: dict, audit_log: list) -> dict:
         return {"status": "withheld", "offer": offer,
                 "alert": "health_flag_raised"}
 
-    if tier == 1 and offer["amount"] <= AUTO_LIMIT:
-        txn_id         = mock_plural_payout(offer)
-        offer["status"] = "disbursed"
-        offer["txn_id"] = txn_id
-        audit_log.append({**offer, "action": "auto_disbursed",
-                          "disbursed_at": datetime.now().isoformat()})
-        return {"status": "disbursed", "txn_id": txn_id, "offer": offer}
-
-    # Tier 2 or Tier 1 over limit -> human review
+    # Tier 1 and Tier 2 -> human review (officer approves, then Plural disburses)
     offer["status"] = "pending_approval"
     audit_log.append({**offer, "action": "queued_for_review",
                       "queued_at": datetime.now().isoformat()})
