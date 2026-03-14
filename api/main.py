@@ -270,13 +270,6 @@ def reject_offer(offer_id: str):
 
 
 # --- Serve UI static files ---
-# Must be AFTER all API routes so /fleet/... etc. take priority
-
-@app.get("/app")
-@app.get("/app/{path:path}")
-def serve_ui(path: str = "index.html"):
-    """Serve the UI files from /app/"""
-    file_path = os.path.join("ui", path)
-    if os.path.isfile(file_path):
-        return FileResponse(file_path)
-    return FileResponse("ui/index.html")
+# Mount AFTER all API routes so /fleet/... etc. take priority
+# Serves ui/ directory at root — index.html, styles.css, *.js all resolve naturally
+app.mount("/", StaticFiles(directory="ui", html=True), name="ui")
