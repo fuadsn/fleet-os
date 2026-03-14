@@ -82,12 +82,8 @@ async function refreshQueue() {
           ${isLowConf ? `<div class="queue-warning">Low confidence — review operator data before approving.</div>` : ''}
           ${offer.reasoning ? `<div class="queue-reasoning">${offer.reasoning.substring(0, 220)}${offer.reasoning.length > 220 ? '...' : ''}</div>` : ''}
           <div class="btn-row">
-            <a href="detail.html?id=${offer.operator_id}&offer=${offer.offer_id}" class="btn-approve">
-              Review &rarr;
-            </a>
-            <button class="btn-reject" onclick="rejectOffer('${offer.offer_id}')">
-              Reject
-            </button>
+            <a href="detail.html?id=${offer.operator_id}&offer=${offer.offer_id}" class="btn-approve">Review &rarr;</a>
+            <button type="button" class="btn-reject" onclick="rejectOffer('${offer.offer_id}')">Reject</button>
           </div>
         </div>`;
       }).join('')}

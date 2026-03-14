@@ -3,6 +3,8 @@ import os
 from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional
 
@@ -265,3 +267,16 @@ def reject_offer(offer_id: str):
             break
 
     return {"status": "rejected", "offer_id": offer_id}
+
+
+# --- Serve UI static files ---
+# Must be AFTER all API routes so /fleet/... etc. take priority
+
+@app.get("/app")
+@app.get("/app/{path:path}")
+def serve_ui(path: str = "index.html"):
+    """Serve the UI files from /app/"""
+    file_path = os.path.join("ui", path)
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+    return FileResponse("ui/index.html")

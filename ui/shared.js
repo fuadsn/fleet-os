@@ -2,7 +2,10 @@
    Fleet Treasury OS — Shared Utilities
    ═══════════════════════════════════════════════════════════════════ */
 
-const API = 'http://localhost:8000';
+// Use relative URL when served from FastAPI, absolute for local dev
+const API = window.location.port === '8000' || window.location.protocol === 'file:'
+  ? 'http://localhost:8000'
+  : window.location.origin;
 
 const OPERATORS = {
   'OP-SHARMA-001': { name: 'Sharma Logistics',      vehicles: 40 },

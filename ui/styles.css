@@ -1125,6 +1125,11 @@ body::after {
 .btn-row {
   display: flex;
   gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
+  margin-top: 16px;
 }
 
 .btn-approve {
@@ -1175,6 +1180,7 @@ body::after {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  text-decoration: none;
   transition: all var(--md-motion-duration) var(--md-motion-standard);
 }
 
