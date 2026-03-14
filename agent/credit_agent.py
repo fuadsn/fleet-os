@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 
 DAILY_RATE      = 0.00038   # ~14% annualized
-AUTO_LIMIT      = 200000    # Rs.2L ceiling for auto-disburse
+AUTO_LIMIT      = 5000000   # Rs.50L ceiling for auto-disburse
 NBFC_RATE       = 0.00027   # Pine Labs' cost of funds (~10% annualized)
 
 

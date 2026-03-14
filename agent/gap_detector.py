@@ -43,17 +43,22 @@ def detect_gap(operator_id: str, xtrapower_feed: list, setu_feed: dict) -> dict:
         key=lambda x: x["transactionTimestamp"]
     )
 
-    if len(credits) >= 3:
+    if len(credits) >= 2:
         credit_dates = [datetime.fromisoformat(c["transactionTimestamp"])
                         for c in credits]
         gaps = [(credit_dates[i+1] - credit_dates[i]).days
                 for i in range(len(credit_dates) - 1)]
-        avg_cycle          = sum(gaps) / len(gaps)
+        avg_cycle          = sum(gaps) / len(gaps) if gaps else 30.0
         last_credit_date   = credit_dates[-1]
         days_since_last    = (datetime.now() - last_credit_date).days
         days_to_inflow     = max(avg_cycle - days_since_last, 1)
         recent_credit_amounts = [c["amount"] for c in credits[-4:]]
         next_inflow_amount = sum(recent_credit_amounts) / len(recent_credit_amounts)
+    elif len(credits) == 1:
+        last_credit_date   = datetime.fromisoformat(credits[0]["transactionTimestamp"])
+        days_since_last    = (datetime.now() - last_credit_date).days
+        days_to_inflow     = max(30 - days_since_last, 1)
+        next_inflow_amount = credits[0]["amount"]
     else:
         days_to_inflow    = 30.0
         next_inflow_amount = 0.0
@@ -61,7 +66,13 @@ def detect_gap(operator_id: str, xtrapower_feed: list, setu_feed: dict) -> dict:
     # Core gap calculation
     projected_spend   = burn_rate * days_to_inflow
     projected_deficit = projected_spend - current_bal
-    gap_detected      = projected_deficit > 0
+
+    # Gap is detected only if:
+    # 1. There's a projected deficit, AND
+    # 2. Current balance can't cover at least 7 days of burn
+    #    (operators with 7+ days of runway are considered healthy)
+    days_of_runway = current_bal / burn_rate if burn_rate > 0 and current_bal > 0 else -1
+    gap_detected = projected_deficit > 0 and days_of_runway < 5
 
     gap_date = None
     if gap_detected and burn_rate > 0:

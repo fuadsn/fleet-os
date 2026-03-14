@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activity Log — Fleet Treasury OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app-header"></div>
+
+<main class="page-container">
+
+  <h1 class="page-title">Agent Activity Log</h1>
+  <p class="page-subtitle">Chronological record of every agent pipeline run — what each agent saw, decided, and did.</p>
+
+  <div class="activity-filters" id="activity-filters">
+    <button class="filter-chip active" data-filter="all">All Runs</button>
+    <button class="filter-chip" data-filter="disbursed">Disbursed</button>
+    <button class="filter-chip" data-filter="pending_approval">Pending</button>
+    <button class="filter-chip" data-filter="withheld">Withheld</button>
+    <button class="filter-chip" data-filter="healthy">Healthy</button>
+  </div>
+
+  <div id="activity-list">
+    <div class="empty-state">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span class="empty-state-title">No Agent Runs Yet</span>
+      <span class="empty-state-text">Run an agent from an operator's briefing page to see activity here.</span>
+      <a href="index.html" class="btn-primary" style="margin-top:16px; text-decoration:none; display:inline-flex;">Go to Dashboard</a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="page-footer">
+  Built for <span>Pine Labs Hackathon 2026</span> &mdash; Fleet Treasury OS
+</footer>
+
+<script src="shared.js"></script>
+<script src="activity.js"></script>
+</body>
+</html>

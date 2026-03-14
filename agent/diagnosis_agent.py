@@ -32,6 +32,7 @@ TIER ASSIGNMENT RULES (the LLM must follow these):
   Tier 3: cause == route_contraction OR confidence < 0.65 -> no credit
 """
 
+import os
 import anthropic
 import instructor
 from pydantic import BaseModel
@@ -39,6 +40,9 @@ from enum import Enum
 from typing import List
 from datetime import datetime, timedelta
 import pandas as pd
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class GapCause(str, Enum):
@@ -56,9 +60,15 @@ class DiagnosisResult(BaseModel):
     reasoning:        str          # one paragraph, readable by credit officer
 
 
-# Initialize the instructor-wrapped Anthropic client
-# instructor patches the client so .messages.create() returns a Pydantic model
-client = instructor.from_anthropic(anthropic.Anthropic())
+# Initialize the instructor-wrapped Anthropic Bedrock client
+# Uses standard AWS IAM credentials (access key + secret + session token)
+bedrock_client = anthropic.AnthropicBedrock(
+    aws_access_key=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    aws_session_token=os.getenv("AWS_SESSION_TOKEN"),
+    aws_region=os.getenv("AWS_DEFAULT_REGION", "us-east-1"),
+)
+client = instructor.from_anthropic(bedrock_client)
 
 
 def diagnose_gap(gap_result: dict, xtrapower_feed: list, setu_feed: dict) -> DiagnosisResult:
@@ -181,7 +191,7 @@ Evidence should cite specific numbers from the data above.
 
     # --- STEP 5: Call Claude via instructor ---
     result = client.messages.create(
-        model          = "claude-sonnet-4-20250514",
+        model          = "us.anthropic.claude-sonnet-4-20250514-v1:0",
         max_tokens     = 1024,
         messages       = [{"role": "user", "content": prompt}],
         response_model = DiagnosisResult

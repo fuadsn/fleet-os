@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Officer Review Queue — Fleet Treasury OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app-header"></div>
+
+<main class="page-container">
+
+  <h1 class="queue-page-title">Officer Review Queue</h1>
+  <p class="queue-page-subtitle">Review and action pending credit offers from the AI agent pipeline.</p>
+
+  <div id="queue-container">
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span class="empty-state-text">Loading queue...</span>
+    </div>
+  </div>
+
+</main>
+
+<footer class="page-footer">
+  Built for <span>Pine Labs Hackathon 2026</span> &mdash; Fleet Treasury OS
+</footer>
+
+<script src="shared.js"></script>
+<script src="queue.js"></script>
+</body>
+</html>
