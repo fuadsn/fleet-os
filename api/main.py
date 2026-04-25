@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -12,6 +13,8 @@ from agent.orchestrator import run_fleet_agent
 from agent.gap_detector import detect_gap
 
 app = FastAPI(title="Fleet Treasury OS")
+SERVICE_NAME = "fleet-os-api"
+SERVICE_VERSION = os.getenv("SERVICE_VERSION", os.getenv("RAILWAY_GIT_COMMIT_SHA", "dev"))
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,8 +43,95 @@ audit_store   = {}
 officer_queue = []
 activity_log  = []   # chronological log of all agent runs
 
+AA_BANK_DATA_TIMEOUT_ERRORS = (TimeoutError, httpx.TimeoutException)
+UNABLE_TO_SCORE_MESSAGE = "unable to score, try again"
+
+
+def _unable_to_score_response(operator_id: str, run_start: datetime, error: Exception) -> dict:
+    """Build a non-500 response when AA bank data cannot be fetched in time."""
+    run_end = datetime.now()
+    outcome = {
+        "status": "unable_to_score",
+        "message": UNABLE_TO_SCORE_MESSAGE,
+        "reason": "aa_bank_data_timeout",
+        "operator_id": operator_id,
+    }
+    audit_store[operator_id] = [{
+        "operator_id": operator_id,
+        "action": "aa_bank_data_timeout",
+        "message": UNABLE_TO_SCORE_MESSAGE,
+        "error_type": type(error).__name__,
+        "timestamp": run_end.isoformat(),
+    }]
+
+    from data.card_registry import OPERATORS
+    op_name = OPERATORS.get(operator_id, {}).get("name", operator_id)
+    activity_log.append({
+        "id": f"RUN-{len(activity_log) + 1:03d}",
+        "operator_id": operator_id,
+        "operator_name": op_name,
+        "timestamp": run_start.isoformat(),
+        "duration_ms": int((run_end - run_start).total_seconds() * 1000),
+        "gap_detected": False,
+        "cause": None,
+        "confidence": None,
+        "tier": None,
+        "outcome": outcome["status"],
+        "offer_amount": None,
+        "steps": [{
+            "agent": "orchestrator",
+            "action": outcome["status"],
+            "detail": UNABLE_TO_SCORE_MESSAGE,
+        }],
+    })
+
+    return {
+        "operator_id": operator_id,
+        "outcome": outcome,
+        "gap_result": None,
+        "diagnosis": None,
+        "offer": None,
+    }
+
 
 # --- Endpoints ---
+
+def _health_dependencies() -> dict:
+    xtrapower_ready = isinstance(xtrapower_feed, list) and len(xtrapower_feed) > 0
+    setu_ready = isinstance(setu_feeds, dict) and len(setu_feeds) > 0
+    setu_complete = setu_ready and all(feed for feed in setu_feeds.values())
+
+    return {
+        "xtrapower_feed": {
+            "status": "ok" if xtrapower_ready else "unavailable",
+            "records": len(xtrapower_feed) if isinstance(xtrapower_feed, list) else 0,
+        },
+        "setu_aa_feeds": {
+            "status": "ok" if setu_complete else "unavailable",
+            "operators": len(setu_feeds) if isinstance(setu_feeds, dict) else 0,
+        },
+        "agent_pipeline": {
+            "status": "ok" if callable(run_fleet_agent) and callable(detect_gap) else "unavailable",
+        },
+    }
+
+
+@app.get("/health")
+def health():
+    dependencies = _health_dependencies()
+    service_status = (
+        "ok"
+        if all(dep["status"] == "ok" for dep in dependencies.values())
+        else "degraded"
+    )
+
+    return {
+        "service": SERVICE_NAME,
+        "version": SERVICE_VERSION,
+        "status": service_status,
+        "dependencies": dependencies,
+    }
+
 
 @app.get("/api/status")
 def root():
@@ -130,7 +220,10 @@ def run_agent(operator_id: str):
     Returns outcome + full audit log for this run.
     """
     run_start = datetime.now()
-    result = run_fleet_agent(operator_id, xtrapower_feed, setu_feeds[operator_id])
+    try:
+        result = run_fleet_agent(operator_id, xtrapower_feed, setu_feeds[operator_id])
+    except AA_BANK_DATA_TIMEOUT_ERRORS as exc:
+        return _unable_to_score_response(operator_id, run_start, exc)
     run_end = datetime.now()
 
     audit_store[operator_id] = result.get("audit_log", [])
